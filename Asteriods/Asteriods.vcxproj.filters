@@ -23,5 +23,8 @@
     <ClInclude Include="Definintions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
