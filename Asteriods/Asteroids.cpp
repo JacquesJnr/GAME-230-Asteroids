@@ -12,14 +12,16 @@ class GameObject
    float xPos,yPos,deltaX,deltaY,radius,angle;
    bool life;
    std::string name;
+   Sprite img;
 
    GameObject()
    {
      life = 1;
    }
 
-   void settings(int X,int Y,float Angle = 0,int radius = 1)
+   void settings(Sprite& image,int X,int Y,float Angle = 0,int radius = 1)
    {
+     img = image;
      xPos = X; yPos = Y;
      angle = Angle;
      radius = radius;
@@ -33,7 +35,7 @@ class GameObject
      circle.setFillColor(Color(255,0,0,170));
      circle.setPosition(xPos,yPos);
      circle.setOrigin(radius,radius);
-     app.draw(circle);
+     //app.draw(circle);
    }
 
    virtual ~GameObject() {};
@@ -132,6 +134,18 @@ int main() {
 
     srand(time(0));
 
+    Texture t1, t2, t3, t4, t5, t6, t7;
+    t1.loadFromFile("images/player.png");
+    t2.loadFromFile("images/background.png");
+    t3.loadFromFile("images/asteroid.png");
+
+    t1.setSmooth(false);
+    t2.setSmooth(true);
+
+    Sprite background(t2);
+    Sprite player(t1);
+    Sprite asteroid(t3);
+
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "SFML Asteroids!");
     window.setFramerateLimit(60);
 
@@ -140,12 +154,12 @@ int main() {
     for (int i = 0; i < 15; i++)
     {
         Asteroid* a = new Asteroid();
-        a->settings(rand() % WIDTH, rand() % HEIGHT, rand() % 360, 25);
+        a->settings(asteroid,rand() % WIDTH, rand() % HEIGHT, rand() % 360, 25);
     }
 
-    Player* p = new Player();
-    p->settings(200, 200, 0, 20);
-    entities.push_back(p);
+    Player* playerObject = new Player();
+    playerObject->settings(player,200, 200, 0, 20);
+    entities.push_back(playerObject);
 
 
     while (window.isOpen())
@@ -160,15 +174,15 @@ int main() {
                 if (event.key.code == Keyboard::Space)
                 {
                     Bullet* b = new Bullet();
-                    b->settings(p->xPos, p->yPos, p->angle, 10);
+                    b->settings(player,playerObject->xPos, playerObject->yPos, playerObject->angle, 10);
                     entities.push_back(b);
                 }
         }
 
-        if (Keyboard::isKeyPressed(Keyboard::Right)) p->angle += 3;
-        if (Keyboard::isKeyPressed(Keyboard::Left))  p->angle -= 3;
-        if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust = true;
-        else p->thrust = false;
+        if (Keyboard::isKeyPressed(Keyboard::Right)) playerObject->angle += 3;
+        if (Keyboard::isKeyPressed(Keyboard::Left))  playerObject->angle -= 3;
+        if (Keyboard::isKeyPressed(Keyboard::Up)) playerObject->thrust = true;
+        else playerObject->thrust = false;
 
 
         for (auto a : entities)
@@ -180,17 +194,11 @@ int main() {
                         a->life = false;
                         b->life = false;
 
-                        GameObject* e = new GameObject();
-                        e->settings(a->xPos, a->yPos);
-                        e->name = "explosion";
-                        entities.push_back(e);
-
-
                         for (int i = 0; i < 2; i++)
                         {
                             if (a->radius == 15) continue;
                             GameObject* e = new Asteroid();
-                            e->settings(a->xPos, a->yPos, rand() % 360, 15);
+                            e->settings(asteroid, a->xPos, a->yPos, rand() % 360, 15);
                             entities.push_back(e);
                         }
 
@@ -201,24 +209,17 @@ int main() {
                     {
                         b->life = false;
 
-                        GameObject* e = new GameObject();
-                        e->settings(sExplosion_ship, a->xPos, a->yPos);
-                        e->name = "explosion";
-                        entities.push_back(e);
-
-                        p->settings( WIDTH / 2, HEIGHT / 2, 0, 20);
-                        p->deltaX = 0; p->deltaY = 0;
+                        playerObject->settings( player ,WIDTH / 2, HEIGHT / 2, 0, 20);
+                        playerObject->deltaX = 0; playerObject->deltaY = 0;
                     }
             }
 
-        for (auto e : entities)
-            if (e->name == "explosion")
-                e->life = 0;
+        
 
         if (rand() % 150 == 0)
         {
             Asteroid* a = new Asteroid();
-            a->settings(0, rand() % WIDTH, rand() % 360, 25);
+            a->settings(asteroid,0, rand() % WIDTH, rand() % 360, 25);
             entities.push_back(a);
         }
 
@@ -232,9 +233,10 @@ int main() {
             else i++;
         }
 
+        window.clear();
         //////draw//////
-        window.draw(background);
         for (auto i : entities) i->draw(window);
+        window.draw(background);
         window.display();
     }
 }
