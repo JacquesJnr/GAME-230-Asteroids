@@ -54,6 +54,9 @@ int main() {
             if (event.type == Event::Closed)
                 window.close();
         }
+
+        window.clear();
+        window.display();
     }
 
 }
