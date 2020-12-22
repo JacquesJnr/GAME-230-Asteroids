@@ -9,7 +9,7 @@ using namespace sf;
 class Entity
 {
    public:
-   float x,y,dx,dy,R,angle;
+   float xPos,yPos,deltaX,deltaY,radius,angle;
    bool life;
    std::string name;
 
@@ -20,23 +20,83 @@ class Entity
 
    void settings(int X,int Y,float Angle = 0,int radius = 1)
    {
-     x = X; y = Y;
+     xPos = X; yPos = Y;
      angle = Angle;
-     R = radius;
+     radius = radius;
    }
 
    virtual void update() {};
 
    void draw(RenderWindow& app)
    {
-     CircleShape circle(R);
+     CircleShape circle(radius);
      circle.setFillColor(Color(255,0,0,170));
-     circle.setPosition(x,y);
-     circle.setOrigin(R,R);
+     circle.setPosition(xPos,yPos);
+     circle.setOrigin(radius,radius);
      app.draw(circle);
    }
 
    virtual ~Entity() {};
+};
+
+class Asteroid : public Entity
+{
+public:
+    Asteroid()
+    {
+        deltaX = rand() % 8 - 4;
+        deltaY = rand() % 8 - 4;
+        name = "asteroid";
+    }
+
+    void Update()
+    {
+        xPos += deltaX;
+        yPos += deltaY;
+
+        if (xPos > WIDTH) xPos = 0;  if (xPos < 0) xPos = WIDTH;
+        if (yPos > HEIGHT) yPos = 0;  if (yPos < 0) yPos = HEIGHT;
+    }
+};
+
+class Player : public Entity
+{
+public:
+    bool thrust;
+
+    Player()
+    {
+        name = "player";
+    }
+
+    void Update()
+    {
+        if (thrust)
+        {
+            deltaX += cos(angle * degsToRad) * 0.2f;
+            deltaY += sin(angle * degsToRad) * 0.2f;
+        }
+        else
+        {
+            deltaX *= 0.99;
+            deltaY *= 0.99;
+        }
+
+        int maxSpeed = 15;
+        float speed = sqrt(deltaX * deltaX + deltaY * deltaY);
+        if (speed > maxSpeed)
+        {
+            deltaX *= maxSpeed / speed;
+            deltaY *= maxSpeed / speed;
+        }
+
+        xPos += deltaX;
+        yPos += deltaY;
+
+        if (xPos > WIDTH) xPos = 0; if (xPos < 0) xPos = WIDTH;
+        if (yPos > HEIGHT) yPos = 0; if (yPos < 0) yPos = HEIGHT;
+    }
+
 };
 
 int main() {
